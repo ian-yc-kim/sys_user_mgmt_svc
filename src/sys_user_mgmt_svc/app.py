@@ -10,21 +10,46 @@ Note:
 - Ensure that the returned `app` object has a `run()` method to start the application.
 """
 
-from sys_user_mgmt_svc.config import Config
+from sys_user_mgmt_svc.config import settings
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
+from .database import Base
+from fastapi import FastAPI
 
-def create_app(config: Config):
-    # Initialize the application instance
-    class Application:
-        def __init__(self, config: Config):
-            self.config = config
-            # Initialize other components here
-            # For example, set up database connections, services, etc.
 
-        def run(self):
-            # Implement the logic to start the application
-            # This could be starting a web server, processing tasks, etc.
-            # replace this with actual run logic
-            print("Application is running")
+def create_app():
+    # Initialize the FastAPI application instance
+    app = FastAPI()
 
-    app = Application(config)
+    # Set up the database engine and session
+    engine = create_engine(settings.DATABASE_URL, echo=settings.DEBUG)
+    SessionLocal = scoped_session(sessionmaker(bind=engine))
+
+    # Create all tables
+    Base.metadata.create_all(bind=engine)
+
+    # Dependency to get DB session
+    def get_db():
+        db = SessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    # Include routers (assuming routers are defined elsewhere)
+    from .routers import user_router, token_router
+    app.include_router(user_router, prefix="/users", tags=["Users"])
+    app.include_router(token_router, prefix="/tokens", tags=["Tokens"])
+
+    @app.on_event("startup")
+    async def startup_event():
+        # Initialize resources, e.g., connect to DB
+        print("Database connected.")
+
+    @app.on_event("shutdown")
+    async def shutdown_event():
+        # Close resources, e.g., disconnect from DB
+        SessionLocal.remove()
+        print("Database connection closed.")
+
     return app

@@ -1,16 +1,7 @@
-"""
-This module handles the configuration of the application.
-
-It loads environment variables from the `.env` file, and can be customized
-to load different configurations based on the environment (development, testing, production).
-
-testing: used for unittests
-development: used for integration tests and manual tests
-production: used for production
-"""
-
-import os
+from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
+import os
+from sqlalchemy.engine import URL
 
 # Load environment-specific .env file
 # Default is `.env.development`, but can be overridden by setting the ENVIRONMENT variable
@@ -18,24 +9,16 @@ environment = os.getenv('ENVIRONMENT', 'development')
 dotenv_file = f'.env.{environment}'
 load_dotenv(dotenv_file)
 
-# Configuration class to hold the settings
-
-
-class Config:
+class Settings(BaseSettings):
     """
     Configuration settings loaded from environment variables.
     """
-    ENVIRONMENT = environment
-    DEBUG = os.getenv("DEBUG", "False") == "True"
+    ENVIRONMENT: str = environment
+    DEBUG: bool = os.getenv("DEBUG", "False") == "True"
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///:memory:")
     # Add more configuration settings as needed
 
-    # example database config: uncomment it when database is used
-    # DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///:memory:")
+    class Config:
+        env_file = f".env.{os.getenv('ENVIRONMENT', 'development')}"
 
-
-def load_config():
-    """
-    Returns an instance of the Config class with the environment variables loaded.
-    """
-    config = Config()
-    return config
+settings = Settings()

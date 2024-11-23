@@ -10,7 +10,7 @@ Main Responsibilities:
 """
 
 import logging
-from sys_user_mgmt_svc.config import load_config
+from sys_user_mgmt_svc.config import settings
 from sys_user_mgmt_svc.app import create_app
 
 # Set up logging for the application
@@ -31,15 +31,16 @@ def main():
     """
 
     # Step 1: Load configuration settings (can be environment-specific)
-    config = load_config()
+    config = settings
     logger.info("Configuration loaded successfully")
 
     # Step 2: Initialize the app with the loaded configuration
-    app = create_app(config)
+    app = create_app()
     logger.info("Application initialized successfully")
 
     # Step 3: Start the app (This could be a web server, CLI tool, etc.)
-    app.run()
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
     logger.info("Application started successfully")
 
 
