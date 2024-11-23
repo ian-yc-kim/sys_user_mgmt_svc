@@ -9,6 +9,9 @@ packages = [{include = "sys_user_mgmt_svc", from = "src"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 python-dotenv = "^1.0.1"
+sqlalchemy = "^2.0.36"
+pydantic = "^2.10.1"
+pydantic-settings = "^2.6.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
